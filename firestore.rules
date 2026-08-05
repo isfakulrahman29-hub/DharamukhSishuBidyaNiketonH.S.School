@@ -1,0 +1,59 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Function to check if the user is an active admin
+    function isAdmin() {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true;
+    }
+
+    // Admins Collection
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false; // Only manage admins through secure scripts or Firebase Console initially
+    }
+
+    // Inquiries Collection
+    match /admission_inquiries/{inquiryId} {
+      // Anyone can create an inquiry
+      allow create: if true; // In a production app, add rate limiting and strict schema validation here.
+      // Only admins can read, update, or delete inquiries
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Public Content Collections
+    match /site_settings/{document=**} { allow read: if true; allow write: if isAdmin(); }
+    match /pages/{document=**} { allow read: if true; allow write: if isAdmin(); }
+    match /admission_info/{document=**} { allow read: if true; allow write: if isAdmin(); }
+    match /social_links/{document=**} { allow read: if true; allow write: if isAdmin(); }
+
+    // Publishable Content Collections (Only read if published == true, unless admin)
+    match /teachers/{document=**} {
+      allow read: if isAdmin() || (resource.data.published == true);
+      allow write: if isAdmin();
+    }
+    match /notices/{document=**} {
+      allow read: if isAdmin() || (resource.data.published == true);
+      allow write: if isAdmin();
+    }
+    match /events/{document=**} {
+      allow read: if isAdmin() || (resource.data.published == true);
+      allow write: if isAdmin();
+    }
+    match /gallery/{document=**} {
+      allow read: if isAdmin() || (resource.data.published == true);
+      allow write: if isAdmin();
+    }
+    match /faqs/{document=**} {
+      allow read: if isAdmin() || (resource.data.published == true);
+      allow write: if isAdmin();
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
