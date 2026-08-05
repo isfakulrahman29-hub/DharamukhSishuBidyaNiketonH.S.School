@@ -1,0 +1,6 @@
+{
+  "name": "Dharamukh Sishu Bidya Niketon Higher Secondary School",
+  "description": "Official website for Dharamukh Sishu Bidya Niketon Higher Secondary School, Nagaon, Assam.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
